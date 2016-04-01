@@ -54,7 +54,7 @@ function getUser(email, fn) {
 
 function getToken(email, fn) {
 	var param = {
-		IdentityPoolId: config.IDENTITY_POOL_ID,
+		IdentityPoolId: config.IDENTITY_POOL_NAME,
 		Logins: {} // To have provider name in a variable
 	};
 	param.Logins[config.DEVELOPER_PROVIDER_NAME] = email;
