@@ -26,6 +26,18 @@
   <![endif]-->
 </head>
 <body class="hold-transition register-page">
+    <!-- AWS - Copy me Under the Body tag
+  ================================================== -->
+  <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1.28.min.js"></script>
+  <script>
+      AWS.config.region = 'us-east-1';
+      AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+      IdentityPoolId: 'us-east-1:07a81c51-8725-445d-8216-252a4e8912fd'
+    });
+    var lambda = new AWS.Lambda();
+  </script>
+  <!-- AWS  - Copy me - END
+  ================================================== -->
 <div class="register-box">
   <div class="register-logo">
     <a href="file:///C:/Users/Shoshie/Dropbox/AdminLTE-2.3.0/pages/examples/loginedit.html"><b>Smart Restraint</a>
@@ -33,36 +45,34 @@
 
   <div class="register-box-body">
     <p class="login-box-msg">Register a new doctor or nurse</p>
-    <form action="AdminLTE 2 _ Starter copy.html" method="post"> <!-- this link bypasses logging in -->
       <div class="form-group has-feedback">
-        <input type="text" class="form-control" placeholder="Full name">
+        <input id="name_input" type="text" class="form-control" placeholder="Full name">
         <span class="glyphicon glyphicon-user form-control-feedback"></span>
       </div>
       <div class="form-group has-feedback">
-        <input type="email" class="form-control" placeholder="Email">
+        <input id="email_input" type="email" class="form-control" placeholder="Email">
         <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
       </div>
       <div class="form-group has-feedback">
-        <input type="password" class="form-control" placeholder="Password">
+        <input id="password_input" type="password" class="form-control" placeholder="Password">
         <span class="glyphicon glyphicon-lock form-control-feedback"></span>
       </div>
       <div class="form-group has-feedback">
-        <input type="password" class="form-control" placeholder="Retype password">
+        <input id="password2_input"type="password" class="form-control" placeholder="Retype password">
         <span class="glyphicon glyphicon-log-in form-control-feedback"></span>
       </div>
           <div class="row">
             <div class="col-xs-8">
               <div class="checkbox icheck">
                 <label>
-                  <input type="checkbox"> I agree to use this appropriately</a>
+                  <input id="policy_box" type="checkbox"> I agree to use this appropriately</a>
                 </label>
               </div>
             </div><!-- /.col -->
             <div class="col-xs-4">
-              <button type="submit" class="btn btn-primary btn-block btn-flat">Register</button>
+              <button id="register_button" type="submit" class="btn btn-primary btn-block btn-flat">Register</button>
             </div><!-- /.col -->
           </div>
-        </form>
     </div>
 
     <a href="newlogin.html" class="text-center">I already have a membership</a>
@@ -84,5 +94,39 @@
     });
   });
 </script>
+<!-- AWS - Edit me
+  ================================================== -->
+    <script type="text/javascript">
+      var name_input = document.getElementById("name_input");
+      var email_input = document.getElementById("email_input");
+      var password_input = document.getElementById("password_input");
+      var password2_input = document.getElementById("password2_input");
+      var policy_box = document.getElementById("policy_box");
+      var register_button = document.getElementById("register_button");
+      register_button.addEventListener("click", function(){
+        if(password_input.value==password2_input.value) {
+          var input = {
+            email: email_input.value,
+            password: password_input.value,
+            name: name_input.value
+          };
+          lambda.invoke({
+            FunctionName: "createUser",
+            Payload: JSON.stringify(input) 
+          }, function(err,data){
+            var parsed_data = JSON.parse(data["Payload"]);
+            if(parsed_data.created) {
+              alert('Please check your email for a validation link!');
+            } else {
+              alert('Registration failed!');
+            }
+          });
+        } else {
+          alert('Passwords do not match!');
+        }
+      });
+    </script>
+    <!-- AWS - Edit me
+      ================================================== -->
 </body>
 </html>
