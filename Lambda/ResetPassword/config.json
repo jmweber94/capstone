@@ -8,6 +8,6 @@
   "DEVELOPER_PROVIDER_NAME": "login.smartrestraint",
   "EXTERNAL_NAME": "SMART System",
   "EMAIL_SOURCE": "admin@smartrestraint.me",
-  "VERIFICATION_PAGE": "http://www.smartrestraint.me.s3-website-us-east-1.amazonaws.com/pages/examples/verifyedit.html",
-  "RESET_PAGE": "http://www.smartrestraint.me.s3-website-us-east-1.amazonaws.com/pages/examples/reset.html"
+  "VERIFICATION_PAGE": "http://www.smartrestraint.me/verify.html",
+  "RESET_PAGE": "http://www.smartrestraint.me/passwordreset.html"
 }
