@@ -4,19 +4,19 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>SMARTRestraints | Reset Password</title>
+    <title>SMARTRestraints | Verify</title>
     <!-- Tell the browser to be responsive to screen width -->
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
     <!-- Bootstrap 3.3.5 -->
-    <link rel="stylesheet" href="../../bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
     <!-- Ionicons -->
     <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
     <!-- Theme style -->
-    <link rel="stylesheet" href="../../dist/css/AdminLTE.min.css">
+    <link rel="stylesheet" href="./dist/css/AdminLTE.min.css">
     <!-- iCheck -->
-    <link rel="stylesheet" href="../../plugins/iCheck/square/blue.css">
+    <link rel="stylesheet" href="./plugins/iCheck/square/blue.css">
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -40,37 +40,43 @@
   ================================================== -->
     <div class="login-box">
       <div class="login-logo">
-        <b>Smart Restraint</a>
+        <a href="index.html"><b>Smart Restraint</a>
       </div><!-- /.login-logo -->
       <div class="login-box-body">
-        <p class="login-box-msg">Reset your password</p>
+        <p class="login-box-msg">Sign in to view or modify devices</p>
           <div class="form-group has-feedback">
-            <input id="password_input" type="password" class="form-control" placeholder="New Password">
-            <span class="glyphicon glyphicon-lock form-control-feedback"></span>
+            <input id="email_input" type="email" class="form-control" placeholder="Email">
+            <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
           </div>
           <div class="form-group has-feedback">
-            <input id="password2_input" type="password" class="form-control" placeholder="New Password">
+            <input id="password_input" type="password" class="form-control" placeholder="Password">
             <span class="glyphicon glyphicon-lock form-control-feedback"></span>
           </div>
           <div class="row">
             <div class="col-xs-8">
+              <div class="checkbox icheck">
+                <label>
+                  <input type="checkbox"> Remember Me
+                </label>
+              </div>
             </div><!-- /.col -->
             <div class="col-xs-4">
-              <button id="submit_button" type="submit" class="btn btn-primary btn-block btn-flat">Reset</button>
+              <button id="submit_button" type="submit" class="btn btn-primary btn-block btn-flat">Sign In</button>
             </div><!-- /.col -->
           </div>
 
-        <a href="registeredit.html" class="text-center">Register a new membership</a>
+        <a href="lostpassword.html">I forgot my password</a><br>
+        <a href="indext.html" class="text-center">Register a new membership</a>
 
       </div><!-- /.login-box-body -->
     </div><!-- /.login-box -->
 
     <!-- jQuery 2.1.4 -->
-    <script src="../../plugins/jQuery/jQuery-2.1.4.min.js"></script>
+    <script src="./plugins/jQuery/jQuery-2.1.4.min.js"></script>
     <!-- Bootstrap 3.3.5 -->
-    <script src="../../bootstrap/js/bootstrap.min.js"></script>
+    <script src="./bootstrap/js/bootstrap.min.js"></script>
     <!-- iCheck -->
-    <script src="../../plugins/iCheck/icheck.min.js"></script>
+    <script src="./plugins/iCheck/icheck.min.js"></script>
     <script>
       $(function () {
         $('input').iCheck({
@@ -94,33 +100,49 @@
           p[decode(match[1])] = decode(match[2]);
         return p;
       }
+
       var urlParams = getUrlParams();
-      var email = urlParams['email'] || null;
-      var lost = urlParams['lost'] || null;
+      var input= {
+        email: urlParams['email'],
+        verify: urlParams['verify']
+      };
+      lambda.invoke({
+        FunctionName: "verifyUser",
+        Payload: JSON.stringify(input) 
+      }, function(err,data){
+        var parsed_data = JSON.parse(data["Payload"]);
+        if(parsed_data.verified) {
+          alert('Email verified! Please login.');
+        } else {
+          alert('Email failed to Verify!');
+        }
+      });
+
+      var email_input = document.getElementById("email_input");
       var password_input = document.getElementById("password_input");
-      var password2_input = document.getElementById("password2_input");
       var submit_button = document.getElementById("submit_button");
       submit_button.addEventListener("click", function(){
-        if(password_input.value == password2_input.value && password_input.value.length>0) {
-          var input = {
-            email: email,
-            lost: lost,
-            password: password_input.value
-          };
-          lambda.invoke({
-            FunctionName: "resetPassword",
-            Payload: JSON.stringify(input) 
-          }, function(err,data){
-            var parsed_data = JSON.parse(data["Payload"]);
-            if(parsed_data.sent) {
-              window.location = "http://www.smartrestraints.me";
-            } else {
-              alert('Failed to reset password!');
-            }
-          });
-        } else {
-          alert('Your passwords do not match!');
-        }
+        var input = {
+          email: email_input.value,
+          password: password_input.value
+        };
+        lambda.invoke({
+          FunctionName: "login",
+          Payload: JSON.stringify(input) 
+        }, function(err,data){
+          var parsed_data = JSON.parse(data["Payload"]);
+          if(parsed_data.login) {
+            var creds = AWS.config.credentials;
+            creds.params.IdentityId = parsed_data.identityId;
+            creds.params.Logins = {
+              'cognito-identity.amazonaws.com': parsed_data.token
+            };
+            creds.expired = true;
+            window.location = "http://www.smartrestraint.me/Main_Page.html"
+          } else {
+            alert('Login not successful!');
+          }
+        });
       });
     </script>
     <!-- AWS - Edit me
