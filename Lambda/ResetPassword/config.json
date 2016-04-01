@@ -1,0 +1,13 @@
+{
+  "AWS_ACCOUNT_ID": "049225162170",
+  "REGION": "us-east-1",
+  "BUCKET": "www.smartrestraint.me",
+  "MAX_AGE": "10",
+  "DDB_TABLE": "users",
+  "IDENTITY_POOL_NAME": "us-east-1:07a81c51-8725-445d-8216-252a4e8912fd",
+  "DEVELOPER_PROVIDER_NAME": "login.smartrestraint",
+  "EXTERNAL_NAME": "SMART System",
+  "EMAIL_SOURCE": "admin@smartrestraint.me",
+  "VERIFICATION_PAGE": "http://www.smartrestraint.me.s3-website-us-east-1.amazonaws.com/verify.html",
+  "RESET_PAGE": "http://smartrestraintdemo.s3.amazonaws.com/reset.html"
+}
