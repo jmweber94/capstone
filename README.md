@@ -1,5 +1,5 @@
 # SMART System BioE Capstone Project
-This is where we're keeping all of our BioE code.
+This is where we're keeping all of our code.
 
 ## Lambda
 This folder contains the lambda functions that we used to control the dynamic portions of the code
