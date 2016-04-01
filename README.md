@@ -1,4 +1,4 @@
-# capstone
+# SMART System BioE Capstone Project
 This is where we're keeping all of our BioE code.
 
 ## Lambda
