@@ -44,7 +44,7 @@ function storeUser(name, email, password, salt, fn) {
 				},
 				name: {
 					S: name
-				}
+				},
 				passwordHash: {
 					S: password
 				},
@@ -129,4 +129,4 @@ exports.handler = function(event, context) {
 			});
 		}
 	});
-}
+};
