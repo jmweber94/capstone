@@ -1,0 +1,53 @@
+Raspberry Pi
+
+There is a Python library for serial communications called 'pySerial' which has history with Arduino. So, I stood on the shoulders of giants and adapted the instructions found here.
+
+Step 1. If you are not reading this page on your Pi, then switch now, so you can copy and paste.
+
+Step 2. Browse to here and download pyserial-2.5.tar.gz (106.3 kB) and save it somewhere convenient. I saved it to the 'other' folder on the Desktop.
+
+Step 3. This is a gziped tar file. Which needs unzipping and untaring. To unzip it open a Terminal, which you will find from the 'start menu' under 'accessories'. Now paste the following commands into it.
+cd /home/pi/Desktop/other
+gunzip pyserial-2.5.tar.gz
+tar - xvf pyserial-2.5.tar
+
+Step 4. Install pySerial, by typing these lines in your terminal window:
+cd pyserial-2.5
+sudo python setup.py install
+
+
+Step 5. Run Python 2. You will find this from the menu under Programming - Use Python 2 not 3.
+
+Thats it! Now we just need to write some Python to access the Serial port. So type the commands shown in the transcript below.
+
+
+You type the parts after >>>
+
+import serial
+ser = serial.Serial('/dev/ttyACM0', 9600)
+
+Note that the second argument here (9600) is the baud rate and should match whatever you put in your Arduino sketch.
+
+
+/dev/ttyACM0 is the name for the USB interface to the Uno, at least it was for my Uno. The way to discover the port name is to run the following command in the terminal without the Uno plugged in.
+
+ls /dev/tty*
+
+Then plug in your Arduio and run the command again. If there is a new name, then this is the name of your port.
+
+Now lets start a loop listening for messages from the Arduino.
+
+while 1 :
+    ser.readline()
+
+You will need two hit enter twice after you type the second line. Messages should now start to appear!
+
+You can see in the Blue writing where the Arduino is talking to the Pi. Then some error trace as you press ctrl-C to interrupt the messages coming from the Arduino.
+
+When you type
+
+ser.write('5') 
+
+you should see the LED on the Arduino flash 5 times.
+
+There are many possibilities here, we could put a motor shield or LCD shield onto the Arduino and control it from your Pi.
