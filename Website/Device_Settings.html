@@ -84,6 +84,7 @@
             <li class="header">Menu</li>
             <!-- Optionally, you can add icons to the links -->
             <li class="active"><a href="Defaults.html"><i class="fa fa-link"></i> <span>Defaults</span></a></li>
+      
             <li class="treeview">
               <a href="Main_Page.html#"><i class="fa fa-link"></i> <span>Add/Remove</span> <i class="fa fa-angle-left pull-right"></i></a>
               <ul class="treeview-menu">
@@ -92,7 +93,7 @@
               </ul>
             </li>
 
-  <li class="active"><a href="index.html"><i class="fa fa-link"></i> <span>Log Out</span></a></li>
+<li class="active"><a href="index.html"><i class="fa fa-link"></i> <span>Log Out</span></a></li>
 
           </ul><!-- /.sidebar-menu -->
         </section>
@@ -108,6 +109,7 @@
           </h1>
   
       <!-- Main content -->
+        
 <section class= "content">
       <div class="row">
         <div class="col-xs-12">
@@ -135,10 +137,10 @@
 
 
 <div class="row">
-	<div class="box-header">
+  <div class="box-header">
               <h3 class="box-title">Minimum Length:</h3>
             </div>
-	     <!-- /.box-header -->
+       <!-- /.box-header -->
             <div class="box-body">
               <div class="row margin">
                 <div class="col-sm-6">
@@ -159,7 +161,7 @@
 </div> 
 
 <div class="row">
-	<div class="box-header">
+  <div class="box-header">
               <h3 class="box-title">Timing:</h3>
             </div>
 
@@ -168,12 +170,8 @@
 </div>
 
 <div class="row">
-	<div class="box-header">
+  <div class="box-header">
               <h3 class="box-title">Notification Settings:</h3>
-               <div class="btn-group">
-                          <button type="button" class="btn btn-info">Alarm on</button>
-                          <button type="button" class="btn btn-info">Alarm off</button>
-                        </div><p>
             </div>
 </section>
 
@@ -210,32 +208,29 @@
 <!-- Bootstrap slider -->
 <script src="../../plugins/bootstrap-slider/bootstrap-slider.js"></script>
 <script>
-
   $(function () {
     /* BOOTSTRAP SLIDER */
     $('.slider').slider();
-
     /* ION SLIDER */
     $("#range_1").ionRangeSlider({
       min: 0,
-      max: 5,
+      max: 10,
       type: 'single',
       step: 0.1,
-      postfix: " ft",
+      postfix: " mm",
       prettify: false,
       hasGrid: true
     });
-
     $("#range_2").ionRangeSlider({
       min: 0,
-      max: 5,
+      max: 10,
       type: 'single',
       step: 0.1,
-      postfix: " ft",
+      postfix: " mm",
       prettify: false,
       hasGrid: true
     });
   });
 </script>
-  </body>
+</body>
 </html>
