@@ -141,6 +141,26 @@
                     </tr>
                   </table>
 
+                  <button onclick="useit()">Use me</button>
+                  <div id="container"></div>
+                  <script>
+                    function useit() {
+                    // Clone the new row and insert it into the table
+                    var tb = document.getElementsByTagName("tbody");
+                    var clone = document.importNode(t.content, true);
+                    tb[0].appendChild(clone);
+                    
+                    // Create a new row
+                    td[0].textContent = "0384928528";
+                    td[1].textContent = "Acme Kidney Beans";
+                    td[2].textContent = "Acme Kidney Beans";
+                    td[3].textContent = "Acme Kidney Beans";
+
+                    // Clone the new row and insert it into the table
+                    var clone2 = document.importNode(t.content, true);
+                    tb[0].appendChild(clone2);}
+                  </script>
+
                <template id= "productrow">
                 <tr>
                   <td class="record"></td>
@@ -173,25 +193,7 @@ if ('content' in document.createElement('template')) {
   // the HTML template element is not supported.
 }
 </script>
-<button onclick="useit()">Use me</button>
-<div id="container"></div>
-<script>
 
-  // Clone the new row and insert it into the table
-  var tb = document.getElementsByTagName("tbody");
-  var clone = document.importNode(t.content, true);
-  tb[0].appendChild(clone);
-  
-  // Create a new row
-  td[0].textContent = "0384928528";
-  td[1].textContent = "Acme Kidney Beans";
-  td[2].textContent = "Acme Kidney Beans";
-  td[3].textContent = "Acme Kidney Beans";
-
-  // Clone the new row and insert it into the table
-  var clone2 = document.importNode(t.content, true);
-  tb[0].appendChild(clone2);
-</script>
 
 <!-- Your Page Content Here -->
 
