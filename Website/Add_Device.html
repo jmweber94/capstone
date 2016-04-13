@@ -50,16 +50,16 @@
         <span class="glyphicon glyphicon-user form-control-feedback"></span>
       </div>
       <div class="form-group has-feedback">
-        <input id="email_input" type="email" class="form-control" placeholder="Date of Birth">
+        <input id="dob_input" type="text" class="form-control" placeholder="Date of Birth">
         <span class="glyphicon glyphicon-calendar form-control-feedback"></span>
       </div>
       <div class="form-group has-feedback">
-        <input id="password_input" type="password" class="form-control" placeholder="Room Number">
-        <span class="glyphicon glyphicon-info-sign form-control-feedback"></span>
+        <input id="location_input" type="text" class="form-control" placeholder="Device Location">
+        <span class="glyphicon glyphicon-hand-right form-control-feedback"></span>
       </div>
       <div class="form-group has-feedback">
-        <input id="password2_input"type="password" class="form-control" placeholder="Device Location">
-        <span class="glyphicon glyphicon-hand-right form-control-feedback"></span>
+        <input id="room_input"type="text" class="form-control" placeholder="Room Number">
+        <span class="glyphicon glyphicon-info-sign form-control-feedback"></span>
       </div>
           <div class="row">
             <div class="col-xs-8">
@@ -93,32 +93,28 @@
   ================================================== -->
     <script type="text/javascript">
       var name_input = document.getElementById("name_input");
-      var email_input = document.getElementById("email_input");
-      var password_input = document.getElementById("password_input");
-      var password2_input = document.getElementById("password2_input");
-      var policy_box = document.getElementById("policy_box");
+      var dob_input = document.getElementById("dob_input");
+      var location_input = document.getElementById("location_input");
+      var room_input = document.getElementById("room_input");
       var register_button = document.getElementById("register_button");
       register_button.addEventListener("click", function(){
-        if(password_input.value==password2_input.value) {
-          var input = {
-            email: email_input.value,
-            password: password_input.value,
-            name: name_input.value
-          };
-          lambda.invoke({
-            FunctionName: "createUser",
-            Payload: JSON.stringify(input) 
-          }, function(err,data){
-            var parsed_data = JSON.parse(data["Payload"]);
-            if(parsed_data.created) {
-              alert('Please check your email for a validation link!');
-            } else {
-              alert('Registration failed!');
-            }
-          });
-        } else {
-          alert('Passwords do not match!');
-        }
+        var input = {
+          name: name_input.value,
+          dob: dob_input.value,
+          location: location_input.value,
+          room: room_input.value
+        };
+        lambda.invoke({
+          FunctionName: "addDevice",
+          Payload: JSON.stringify(input) 
+        }, function(err,data){
+          var parsed_data = JSON.parse(data["Payload"]);
+          if(parsed_data.created) {
+            alert('Your device has been added!');
+          } else {
+            alert('Registration failed!');
+          }
+        });
       });
     </script>
     <!-- AWS - Edit me
