@@ -148,7 +148,7 @@
                     // Clone the new row and insert it into the table
                     var tb = document.getElementsByTagName("tbody");
                     var clone = document.importNode(t.content, true);
-                    tb[0].appendChild(clone);
+                    //tb[0].appendChild(clone);
                     
                     // Create a new row
                     td[0].textContent = "0384928528";
@@ -157,8 +157,8 @@
                     td[3].textContent = "Acme Kidney Beans";
 
                     // Clone the new row and insert it into the table
-                    //var clone2 = document.importNode(t.content, true);
-                    //tb[0].appendChild(clone2);}
+                    var clone2 = document.importNode(t.content, true);
+                    tb[0].appendChild(clone2);}
                   </script>
 
                <template id= "productrow">
