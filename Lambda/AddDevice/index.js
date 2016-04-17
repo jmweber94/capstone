@@ -12,31 +12,25 @@ var ses = new AWS.SES();
 
 function storeDevice(name, dob, location, room) {
 	// Bytesize
-	var len = 128;
-	crypto.randomBytes(len, function(err, token) {
-		if (err) return fn(err);
-		token = token.toString('hex');
-		dynamodb.putItem({
-			TableName: config.DDB_TABLE,
-			Item: {
-				dob: {
-					S: dob
-				},
-				name: {
-					S: name
-				},
-				location: {
-					S: location
-				},
-				room: {
-					S: room
-				}
+	dynamodb.putItem({
+		TableName: config.DDB_TABLE,
+		Item: {
+			dob: {
+				S: dob
 			},
-			ConditionExpression: 'attribute_not_exists (email)'
-		}, function(err, data) {
-			if (err) return fn(err);
-			else fn(null, token);
-		});
+			name: {
+				S: name
+			},
+			location: {
+				S: location
+			},
+			room: {
+				S: room
+			}
+		},
+	}, function(err, data) {
+		if (err) return fn(err);
+		else fn(null, token);
 	});
 }
 
@@ -46,16 +40,5 @@ exports.handler = function(event, context) {
 	var location = event.location;
 	var room = event.room;
 		 
-	storeDevice(name, dob, location, room, function(err, token) {
-		if (err) {
-			if (err.code == 'ConditionalCheckFailedException') {
-				// userId already found
-				context.succeed({
-					created: false
-				});
-			} else {
-				context.fail('Error in storeDevice: ' + err);
-			}
-		} 
-	});
+	storeDevice(name, dob, location, room)
 };

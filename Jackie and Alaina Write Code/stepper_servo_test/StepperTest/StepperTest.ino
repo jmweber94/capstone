@@ -16,7 +16,7 @@ Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 // Adafruit_MotorShield AFMS = Adafruit_MotorShield(0x61); 
 // Connect a stepper motor with 200 steps per revolution (1.8 degree)
 // to motor port #2 (M3 and M4)
-Adafruit_StepperMotor *myMotor = AFMS.getStepper(200, 2);
+Adafruit_StepperMotor *myMotor = AFMS.getStepper(200, 2);erereererere
 
 void setup() {
   Serial.begin(9600);           // set up Serial library at 9600 bps

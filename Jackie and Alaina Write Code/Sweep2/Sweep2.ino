@@ -28,11 +28,15 @@ void loop()
     
     if (ch == 'e') {
       // Make sure not to exceed the mechanical limitation.
-      pos = 50;
+      if (pos <= 90){
+        pos += 90;
+      }
     } 
     else if (ch == 'r'){
       // Make sure not to exceed the mechanical limitation.
-      pos = 30;
+      if(pos >=30){
+      pos -= 30;
+      }
     }
     
     // Now ask the servo to move to that position.
