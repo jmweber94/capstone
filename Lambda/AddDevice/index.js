@@ -16,7 +16,7 @@ function storeDevice(name, dob, location, room) {
 		TableName: config.DDB_TABLE,
 		Item: {
 			deviceID: {
-				S: date.now()
+				S: 1
 			}
 			dob: {
 				S: dob
