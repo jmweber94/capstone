@@ -2,19 +2,22 @@ console.log('Loading function');
 
 // dependencies
 var AWS = require('aws-sdk');
-var crypto = require('crypto');
 var util = require('util');
 var config = require('./config.json');
 
 // Get reference to AWS clients
 var dynamodb = new AWS.DynamoDB();
 var ses = new AWS.SES();
+var date = new Date();
 
 function storeDevice(name, dob, location, room) {
 	// Bytesize
 	dynamodb.putItem({
 		TableName: config.DDB_TABLE,
 		Item: {
+			deviceID: {
+				S: date.now()
+			}
 			dob: {
 				S: dob
 			},
@@ -35,10 +38,11 @@ function storeDevice(name, dob, location, room) {
 }
 
 exports.handler = function(event, context) {
+	var deviceID = event.deviceID;
 	var name = event.name;
 	var dob = event.dob;
 	var location = event.location;
 	var room = event.room;
 		 
-	storeDevice(name, dob, location, room)
+	storeDevice(deviceID, name, dob, location, room)
 };
