@@ -10,7 +10,7 @@ var dynamodb = new AWS.DynamoDB();
 var ses = new AWS.SES();
 var date = new Date();
 
-function storeDevice(name, dob, location, room) {
+function storeDevice(name, dob, location, room, fn) {
 	// Bytesize
 	dynamodb.putItem({
 		TableName: config.DDB_TABLE,
