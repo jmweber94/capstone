@@ -110,9 +110,6 @@
         }, function(err,data){
           var parsed_data = JSON.parse(data["Payload"]);
           if(parsed_data.addDevice) {
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
             var creds = AWS.config.credentials;
             creds.params.IdentityId = parsed_data.identityId;
             creds.params.Logins = {
@@ -120,10 +117,6 @@
             };
             creds.expired = true;
             window.location = "http://www.smartrestraint.me/Main_Page.html";
-=======
->>>>>>> Stashed changes
-            alert('Your device has been added!');
->>>>>>> origin/master
           } else {
             alert('Registration failed!');
           }
