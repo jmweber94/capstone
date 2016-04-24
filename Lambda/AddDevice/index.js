@@ -44,5 +44,5 @@ exports.handler = function(event, context) {
 	var location = event.location;
 	var room = event.room;
 		 
-	storeDevice(deviceID, name, dob, location, room)
+	storeDevice(name, dob, location, room)
 };
