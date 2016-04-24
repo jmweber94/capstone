@@ -109,7 +109,7 @@
           Payload: JSON.stringify(input) 
         }, function(err,data){
           var parsed_data = JSON.parse(data["Payload"]);
-          if(parsed_data.created) {
+          if(parsed_data.addDevice) {
             alert('Your device has been added!');
           } else {
             alert('Registration failed!');
