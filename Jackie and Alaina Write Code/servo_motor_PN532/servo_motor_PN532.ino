@@ -28,6 +28,7 @@
 #include <EEPROM.h>     // We are going to read and write PICC's UIDs from/to EEPROM
 #include <SPI.h>        // RC522 Module uses SPI protocol
 #include <MFRC522.h>	// Library for Mifare RC522 Devices
+#include 
 /*
 	Instead of a Relay maybe you want to use a servo
 	Servos can lock and unlock door locks too
@@ -106,13 +107,20 @@ void setup() {
   //Protocol Configuration
   Serial.begin(9600);	 // Initialize serial communications with PC
   SPI.begin();           // MFRC522 Hardware uses SPI protocol
-  mfrc522.PCD_Init();    // Initialize MFRC522 Hardware
+  //mfrc522.PCD_Init();    // Initialize MFRC522 Hardware
+  uint32_t versiondata = nfc.getFirmwareVersion();
+  if (! versiondata) {
+    Serial.print("Didn't find PN53x board");
+    while (1); // halt
+  }
   
   //If you set Antenna Gain to Max it will increase reading distance
-  mfrc522.PCD_SetAntennaGain(mfrc522.RxGain_max);
+  
+ //mfrc522.PCD_SetAntennaGain(mfrc522.RxGain_max);
+  nfc.SAMconfig();
   
   Serial.println(F("Access Control v3.3"));   // For debugging purposes
-  ShowReaderDetails();	// Show details of PCD - MFRC522 Card Reader details
+  //ShowReaderDetails();	// Show details of PCD - MFRC522 Card Reader details
 
   //Wipe Code if Button Pressed while setup run (powered on) it wipes EEPROM
   if (digitalRead(wipeB) == LOW) {	// when button pressed pin should get low, button connected to ground

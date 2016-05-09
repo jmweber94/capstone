@@ -1,29 +1,6 @@
-/*
-  Arduino RFID Access Control
-
-  Security !
-
-  To keep it simple we are going to use Tag's Unique IDs
-  as only method of Authenticity. It's simple and not hacker proof.
-  If you need security, don't use it unless you modify the code
-
-  Copyright (C) 2015 Omer Siar Baysal
-
-  This program is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation; either version 2 of the License, or
-  (at your option) any later version.
-
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License along
-  with this program; if not, write to the Free Software Foundation, Inc.,
-  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-
-*/
+/* Arduino Code for Team 17: SMART
+ *
+ */
 
 #include <EEPROM.h>     // We are going to read and write PICC's UIDs from/to EEPROM
 #include <SPI.h>        // RC522 Module uses SPI protocol
@@ -60,13 +37,15 @@
 #define greenLed 6
 #define blueLed 5
 
-#define relay 3			// Set Relay Pin (this is actully our servo)
-#define wipeB 4			// Button pin for WipeMode
+#define relay 4			// Set Relay Pin (this is actully our servo)
+#define wipeB 3			// Button pin for WipeMode
 
 boolean match = false;          // initialize card match to false
 boolean programMode = false;	// initialize programming mode to false
+boolean locked = true;        // initialize brake to be on and motor to be powered
 
-int successRead;		// Variable integer to keep if we have Successful Read from Reader
+int successRead;		          // Variable integer to keep if we have Successful Read from Reader
+int timeRelease = 0;          //initialize to false
 
 byte storedCard[4];		// Stores an ID read from EEPROM
 byte readCard[4];		// Stores scanned ID read from RFID Module
@@ -98,7 +77,7 @@ void setup() {
   pinMode(wipeB, INPUT_PULLUP);		// Enable pin's pull up resistor
   pinMode(relay, OUTPUT);
   //Be careful how relay circuit behave on while resetting or power-cycling your Arduino
-  daServo.write(50);		// Make sure door is locked
+  daServo.write(0);		// Make sure door is locked
   digitalWrite(redLed, LED_OFF);	// Make sure led is off
   digitalWrite(greenLed, LED_OFF);	// Make sure led is off
   digitalWrite(blueLed, LED_OFF);	// Make sure led is off
@@ -112,41 +91,7 @@ void setup() {
   mfrc522.PCD_SetAntennaGain(mfrc522.RxGain_max);
   
   Serial.println(F("Access Control v3.3"));   // For debugging purposes
-  ShowReaderDetails();	// Show details of PCD - MFRC522 Card Reader details
 
-  //Wipe Code if Button Pressed while setup run (powered on) it wipes EEPROM
-  if (digitalRead(wipeB) == LOW) {	// when button pressed pin should get low, button connected to ground
-    digitalWrite(redLed, LED_ON);	// Red Led stays on to inform user we are going to wipe
-    Serial.println(F("Wipe Button Pressed"));
-    Serial.println(F("You have 5 seconds to Cancel"));
-    Serial.println(F("This will be remove all records and cannot be undone"));
-    delay(5000);                        // Give user enough time to cancel operation
-    if (digitalRead(wipeB) == LOW) {    // If button still be pressed, wipe EEPROM
-      Serial.println(F("Starting Wiping EEPROM"));
-      for (int x = 0; x < EEPROM.length(); x = x + 1) {    //Loop end of EEPROM address
-        if (EEPROM.read(x) == 0) {              //If EEPROM address 0
-          // do nothing, already clear, go to the next address in order to save time and reduce writes to EEPROM
-        }
-        else {
-          EEPROM.write(x, 0); 			// if not write 0 to clear, it takes 3.3mS
-        }
-      }
-      Serial.println(F("EEPROM Successfully Wiped"));
-      digitalWrite(redLed, LED_OFF); 	// visualize successful wipe
-      delay(200);
-      digitalWrite(redLed, LED_ON);
-      delay(200);
-      digitalWrite(redLed, LED_OFF);
-      delay(200);
-      digitalWrite(redLed, LED_ON);
-      delay(200);
-      digitalWrite(redLed, LED_OFF);
-    }
-    else {
-      Serial.println(F("Wiping Cancelled"));
-      digitalWrite(redLed, LED_OFF);
-    }
-  }
   // Check if master card defined, if not let user choose a master card
   // This also useful to just redefine Master Card
   // You can keep other EEPROM records just write other than 143 to EEPROM address 1
@@ -176,26 +121,74 @@ void setup() {
   }
   Serial.println("");
   Serial.println(F("-------------------"));
-  Serial.println(F("Everything Ready"));
   Serial.println(F("Waiting PICCs to be scanned"));
   cycleLeds();    // Everything ready lets give user some feedback by cycling leds
 }
 
-
 ///////////////////////////////////////// Main Loop ///////////////////////////////////
 void loop () {
   do {
-    successRead = getID(); 	// sets successRead to 1 when we get read from reader otherwise 0
+    successRead = getID(); 	                                   // sets successRead to 1 when we get read from reader otherwise 0
     if (programMode) {
-      cycleLeds();              // Program Mode cycles through RGB waiting to read a new card
+      cycleLeds();                                             // Program Mode cycles through RGB waiting to read a new card
     }
     else {
-      normalModeOn(); 		// Normal mode, blue Power LED is on, all others are off
+      normalModeOn(); 		                                     // Normal mode, blue Power LED is on, all others are off
     }
   }
-  while (!successRead); 	//the program will not go further while you not get a successful read
+  while (!successRead); 	                                     // the program will not go further while you not get a successful read
   if (programMode) {
-    if ( isMaster(readCard) ) { //If master card scanned again exit program mode
+    doProgramMode();
+  }
+  else {                                                       // if we're not in program mode
+    if ( isMaster(readCard) && !locked) {  	                   // If scanned card's ID matches Master Card's ID and it's not locked, enter program mode
+      programMode = true;
+    }
+    else {
+      if ( isMaster(readCard) && locked) {                     // if master card and locked
+        Serial.println(F("LOCKED"));
+        unlock();
+      }
+      else {
+        if ( findID(readCard) && !locked) {	                   // If not master card but the tag is in memory, lock the device
+          Serial.println(F("LOCKED"));
+          lock();
+        }
+      }
+    }
+  }
+}
+
+/////////////////////////////////////////  Access Granted    ///////////////////////////////////
+void lock () {
+  digitalWrite(blueLed, LED_OFF); 	// Turn off blue LED
+  digitalWrite(redLed, LED_ON); 	// Turn on red LED
+  digitalWrite(greenLed, LED_OFF); 	// Turn off green LED
+  daServo.write(150); 		// brake device
+  locked = true;
+}
+
+///////////////////////////////////////// Access Denied  ///////////////////////////////////
+void unlock() {
+  digitalWrite(greenLed, LED_OFF); 	// Make sure green LED is off
+  digitalWrite(blueLed, LED_OFF); 	// Make sure blue LED is off
+  digitalWrite(redLed, LED_ON); 	// Turn on red LED
+  daServo.write(0);     // brake device
+  delay(1000);
+  locked = false;
+}
+//////////////////////////////////////////////////////////////////////////////////////////
+
+void doProgramMode(){
+  Serial.println(F("Entered Program Mode"));
+      int count = EEPROM.read(0);                              // Read the first Byte of EEPROM that
+      Serial.print(F("I have "));                              // stores the number of ID's in EEPROM
+      Serial.print(count);
+      Serial.print(F(" record(s) on EEPROM"));
+      Serial.println("");
+      Serial.println(F("Scan a PICC to ADD or REMOVE"));
+      Serial.println(F("-----------------------------"));
+  if ( isMaster(readCard) ) {                                // If master card scanned again exit program mode
       Serial.println(F("Master Card Scanned"));
       Serial.println(F("Exiting Program Mode"));
       Serial.println(F("-----------------------------"));
@@ -203,63 +196,18 @@ void loop () {
       return;
     }
     else {
-      if ( findID(readCard) ) { // If scanned card is known delete it
-        Serial.println(F("I know this PICC, removing..."));
+      if ( findID(readCard) ) {                                // If scanned card is known delete it
+        Serial.println(F("Removing..."));
         deleteID(readCard);
         Serial.println("-----------------------------");
       }
-      else {                    // If scanned card is not known add it
-        Serial.println(F("I do not know this PICC, adding..."));
+      else {                                                   // If scanned card is not known add it
+        Serial.println(F("Adding..."));
         writeID(readCard);
         Serial.println(F("-----------------------------"));
       }
     }
-  }
-  else {
-    if ( isMaster(readCard) ) {  	// If scanned card's ID matches Master Card's ID enter program mode
-      programMode = true;
-      Serial.println(F("Hello Master - Entered Program Mode"));
-      int count = EEPROM.read(0); 	// Read the first Byte of EEPROM that
-      Serial.print(F("I have "));    	// stores the number of ID's in EEPROM
-      Serial.print(count);
-      Serial.print(F(" record(s) on EEPROM"));
-      Serial.println("");
-      Serial.println(F("Scan a PICC to ADD or REMOVE"));
-      Serial.println(F("-----------------------------"));
-    }
-    else {
-      if ( findID(readCard) ) {	// If not, see if the card is in the EEPROM
-        Serial.println(F("Welcome, You shall pass"));
-        granted(300);        	// Open the door lock for 300 ms
-      }
-      else {			// If not, show that the ID was not valid
-        Serial.println(F("You shall not pass"));
-        denied();
-      }
-    }
-  }
 }
-
-/////////////////////////////////////////  Access Granted    ///////////////////////////////////
-void granted (int setDelay) {
-  digitalWrite(blueLed, LED_OFF); 	// Turn off blue LED
-  digitalWrite(redLed, LED_OFF); 	// Turn off red LED
-  digitalWrite(greenLed, LED_ON); 	// Turn on green LED
-  daServo.write(150); 		// Unlock door!
-  delay(setDelay); 					// Hold door lock open for given seconds
-  daServo.write(50); 		// Relock door
-  delay(1000); 						// Hold green LED on for a second
-}
-
-///////////////////////////////////////// Access Denied  ///////////////////////////////////
-void denied() {
-  digitalWrite(greenLed, LED_OFF); 	// Make sure green LED is off
-  digitalWrite(blueLed, LED_OFF); 	// Make sure blue LED is off
-  digitalWrite(redLed, LED_ON); 	// Turn on red LED
-  delay(1000);
-}
-
-
 ///////////////////////////////////////// Get PICC's UID ///////////////////////////////////
 int getID() {
   // Getting ready for Reading PICCs
@@ -280,25 +228,6 @@ int getID() {
   Serial.println("");
   mfrc522.PICC_HaltA(); // Stop reading
   return 1;
-}
-
-void ShowReaderDetails() {
-	// Get the MFRC522 software version
-	byte v = mfrc522.PCD_ReadRegister(mfrc522.VersionReg);
-	Serial.print(F("MFRC522 Software Version: 0x"));
-	Serial.print(v, HEX);
-	if (v == 0x91)
-		Serial.print(F(" = v1.0"));
-	else if (v == 0x92)
-		Serial.print(F(" = v2.0"));
-	else
-		Serial.print(F(" (unknown)"));
-	Serial.println("");
-	// When 0x00 or 0xFF is returned, communication probably failed
-	if ((v == 0x00) || (v == 0xFF)) {
-		Serial.println(F("WARNING: Communication failure, is the MFRC522 properly connected?"));
-		while(true);  // do not go further
-	}
 }
 
 ///////////////////////////////////////// Cycle Leds (Program Mode) ///////////////////////////////////
