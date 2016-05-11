@@ -13,8 +13,8 @@
 
 // If using the breakout or shield with I2C, define just the pins connected
 // to the IRQ and reset lines.  Use the values below (2, 3) for the shield!
-#define PN532_IRQ   (2)
-#define PN532_RESET (3)  // Not connected by default on the NFC Shield
+//#define PN532_IRQ   (2)
+//#define PN532_RESET (3)  // Not connected by default on the NFC Shield
 
 // Uncomment just _one_ line below depending on how your breakout or shield
 // is connected to the Arduino:
@@ -31,22 +31,28 @@ Adafruit_PN532 nfc(PN532_SCK, PN532_MISO, PN532_MOSI, PN532_SS);
 // Or use this line for a breakout or shield with an I2C connection:
 //Adafruit_PN532 nfc(PN532_IRQ, PN532_RESET);
 
+
 #include <EEPROM.h>     // We are going to read and write PICC's UIDs from/to EEPROM
 #include <Servo.h>
 Servo daServo;
+
+//#include <Adafruit_MotorShield.h>
+//#include "utility/Adafruit_MS_PWMServoDriver.h"
+
+//Adafruit_MotorShield AFMS = Adafruit_MotorShield(); 
+//Adafruit_StepperMotor *motor = AFMS.getStepper(200, 2);
 
 #define LED_ON LOW
 #define LED_OFF HIGH
 
 #define redLed 6		// Set Led Pins
 #define greenLed 7
-#define blueLed 11
 
-#define relay 9			// Set Relay Pin (this is actully our servo)
+#define relay 10			// Set Relay Pin (this is actully our servo)
 
 boolean match = false;          // initialize card match to false
 boolean programMode = false;	// initialize programming mode to false
-boolean locked = false;        // initialize brake to be on and motor to be powered
+boolean locked = true;        // initialize brake to be on and motor to be powered
 
 boolean successRead;		          // Variable integer to keep if we have Successful Read from Reader
 int timeRelease = 0;          //initialize to false
@@ -61,16 +67,16 @@ void setup() {
   daServo.attach(relay);
   pinMode(redLed, OUTPUT);
   pinMode(greenLed, OUTPUT);
-  pinMode(blueLed, OUTPUT);
   pinMode(relay, OUTPUT);
-  daServo.write(0);		// Make sure door is locked
+  daServo.write(130);		// Make sure door is locked
   digitalWrite(redLed, LED_OFF);	// Make sure led is off
   digitalWrite(greenLed, LED_OFF);	// Make sure led is off
-  digitalWrite(blueLed, LED_OFF);	// Make sure led is off
 
   //Protocol Configuration
   Serial.begin(115200);	 // Initialize serial communications with PC
   nfc.begin();
+  //AFMS.begin();
+  //motor->setSpeed(25);
   
   uint32_t versiondata = nfc.getFirmwareVersion();
   if (! versiondata) {
@@ -95,10 +101,6 @@ void setup() {
     Serial.println(F("Scan A PICC to Define as Master Card"));
     do {
       successRead = getID();               // sets successRead to 1 when we get read from reader otherwise 0
-      digitalWrite(blueLed, LED_ON);       // Visualize Master Card need to be defined
-      delay(200);
-      digitalWrite(blueLed, LED_OFF);
-      delay(200);
     }
     while (!successRead);                  // Program will not go further while you not get a successful read
     for ( int j = 0; j < 7; j++ ) {        // Loop 4 times
@@ -132,12 +134,10 @@ void loop () {
       cycleLeds();                               // Program Mode cycles through RGB waiting to read a new card
     }
     else {
-      //normalModeOn(); 		                       // Normal mode, blue Power LED is on, all others are off
       Serial.println("Normal Mode Lights");
     }
   }
   while (!success); 	                       // the program will not go further while you not get a successful read
-  Serial.println(locked);
   if (programMode) {
     Serial.println("programMode = True");
     doProgramMode();
@@ -164,25 +164,26 @@ void loop () {
       }
     }
   }
+  delay(50);
 }
 
 /////////////////////////////////////////  Access Granted    ///////////////////////////////////
 void lock () {
-  digitalWrite(blueLed, LED_OFF); 	// Turn off blue LED
   digitalWrite(redLed, LED_ON); 	// Turn on red LED
   digitalWrite(greenLed, LED_OFF); 	// Turn off green LED
-  daServo.write(150); 		// brake device
+  daServo.write(130); 		// brake device
   locked = true;
+  //motor->step(1000,BACKWARD,DOUBLE);
 }
 
 ///////////////////////////////////////// Access Denied  ///////////////////////////////////
 void unlock() {
   digitalWrite(greenLed, LED_ON); 	// Make sure green LED is off
-  digitalWrite(blueLed, LED_OFF); 	// Make sure blue LED is off
   digitalWrite(redLed, LED_OFF); 	// Turn on red LED
-  daServo.write(0);     // brake device
-  delay(1000);
+  daServo.write(90);     // brake device
+  delay(100);
   locked = false;
+  //motor->step(1000,FORWARD,DOUBLE);
 }
 //////////////////////////////////////////////////////////////////////////////////////////
 
@@ -234,26 +235,11 @@ boolean getID() {
 void cycleLeds() {
   digitalWrite(redLed, LED_OFF); 	// Make sure red LED is off
   digitalWrite(greenLed, LED_ON); 	// Make sure green LED is on
-  digitalWrite(blueLed, LED_OFF); 	// Make sure blue LED is off
-  delay(200);
-  digitalWrite(redLed, LED_OFF); 	// Make sure red LED is off
-  digitalWrite(greenLed, LED_OFF); 	// Make sure green LED is off
-  digitalWrite(blueLed, LED_ON); 	// Make sure blue LED is on
   delay(200);
   digitalWrite(redLed, LED_ON); 	// Make sure red LED is on
   digitalWrite(greenLed, LED_OFF); 	// Make sure green LED is off
-  digitalWrite(blueLed, LED_OFF); 	// Make sure blue LED is off
   delay(200);
 }
-
-//////////////////////////////////////// Normal Mode Led /////////////////////////////////////
-void normalModeOn () {
-  digitalWrite(blueLed, LED_ON); 	// Blue LED ON and ready to read card
-  digitalWrite(redLed, LED_OFF); 	// Make sure Red LED is off
-  digitalWrite(greenLed, LED_OFF); 	// Make sure Green LED is off
-  daServo.write(50); 		// Make sure Door is Locked
-}
-
 //////////////////////////////////////// Read an ID from EEPROM //////////////////////////////
 void readID( int number ) {
   int start = (number * 7 ) + 2; 		// Figure out starting position
@@ -349,7 +335,6 @@ boolean findID( byte find[] ) {
 ///////////////////////////////////////// Write Success to EEPROM   ///////////////////////////////////
 // Flashes the green LED 3 times to indicate a successful write to EEPROM
 void successWrite() {
-  digitalWrite(blueLed, LED_OFF); 	// Make sure blue LED is off
   digitalWrite(redLed, LED_OFF); 	// Make sure red LED is off
 
   for (int i = 1; i <=3; i++){
@@ -363,7 +348,6 @@ void successWrite() {
 ////////////////////////////////////// Write Failed to EEPROM   ///////////////////////////////////
 // Flashes the red LED 3 times to indicate a failed write to EEPROM
 void failedWrite() {
-  digitalWrite(blueLed, LED_OFF); 	// Make sure blue LED is off
   digitalWrite(greenLed, LED_OFF);   // Make sure green LED is off
   for(int i = 1; i <=3; i++){
     digitalWrite(redLed, LED_OFF); 	// Make sure red LED is off
@@ -376,13 +360,13 @@ void failedWrite() {
 ///////////////////////////////// Success Remove UID From EEPROM  ////////////////////////////////
 // Flashes the blue LED 3 times to indicate a success delete to EEPROM
 void successDelete() {
-  digitalWrite(redLed, LED_OFF); 	// Make sure red LED is off
-  digitalWrite(greenLed, LED_OFF); 	// Make sure green LED is off
   for(int i = 1; i <=3; i++){
-    digitalWrite(blueLed, LED_OFF);   // Make sure blue LED is off
-    delay(200);
-    digitalWrite(blueLed, LED_ON); 	// Make sure blue LED is on
-    delay(200);
+    digitalWrite(redLed, LED_OFF);   // Make sure red LED is off
+    digitalWrite(greenLed, LED_OFF);  // Make sure green LED is off
+    delay(100);
+    digitalWrite(redLed, LED_ON);   // Make sure red LED is off
+    digitalWrite(greenLed, LED_ON);  // Make sure green LED is off
+    delay(100);
   }
 }
 
@@ -390,9 +374,9 @@ void successDelete() {
 // Check to see if the ID passed is the master programing card
 boolean isMaster( byte test[] ) {
   if ( checkTwo( test, masterCard ) ){
-    Serial.println("Is master");
+    //Serial.println("Is master");
     return true;}
   else{
-    Serial.println("Is not master");
+    //Serial.println("Is not master");
     return false;}
 }
