@@ -2,7 +2,7 @@
 This is where we're keeping all of our code.
 
 ## Lambda
-This folder contains the lambda functions that we used to control the dynamic portions of the code
+This folder contains the lambda functions that we used to control the dynamic portions of the code for the website.
 
 ## NFC
 This contains the code we used to deal with the NFC reader, may end up moving motor code here as well
